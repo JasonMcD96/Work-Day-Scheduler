@@ -1,25 +1,30 @@
 
 //globals
-var hoursArray = ['9am', '10am', '11am', '12pm', '1pm',
-'2pm', '3pm', '4pm', '5pm']
+var hoursArray = ['9:00am', '10:00am', '11:00am', '12:00pm', '1:00pm',
+    '2:00pm', '3:00pm', '4:00pm', '5:00pm']
+
+var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
+    'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+var currentBlockFound = false;
 
 init();
-
-
 // ------- IMPORTANT --------
 // $("#9am").find("textarea").css("background-color", "pink");
 
 
-//init() initializes the program
-function init(){
-   
+//init() initializes the program by creating any needed local storage and 
+//          formatting the time blocks properly
+function init() {
+
     //loop through the hours of the day
     var newTimeRow;
-    for(var i = 0; i < hoursArray.length; i++){
+    for (var i = 0; i < hoursArray.length; i++) {
         //each hour gets its own row
         newTimeRow = $('<div></div>');
         $(newTimeRow).attr("id", hoursArray[i]);
         $(newTimeRow).attr("class", "row time-block");
+        $(newTimeRow).attr("data-time", hoursArray[i]);
 
         //create 3 colums for each row
         //col #1 - just hour text
@@ -30,7 +35,10 @@ function init(){
 
         //col #2 - div with a textarea for input
         newCol = $('<div></div>');
-        $(newCol).attr('class', 'col col-8 past');
+
+        //set class based on time
+        var reqClass = getRequiredTimeClass(hoursArray[i], i); //returns- past  present or future
+        $(newCol).attr('class', 'col col-8 ' + reqClass);
         $(newCol).append("<textarea></textarea>");
         $(newTimeRow).append(newCol);
 
@@ -39,7 +47,55 @@ function init(){
         $(newCol).attr('class', 'col col-2 saveBtn');
         $(newCol).html("<i class=\"far fa-save\"></i>")
         $(newTimeRow).append(newCol);
+
+        //append the new row
         $("#timeBlockContainer").append(newTimeRow);
-             
     }
+
+    //display the current day
+    var date = buildDateString();
+    $("#currentDay").text(date);
+}
+
+$("#timeBlockContainer").on("click", function(event){
+    event.preventDefault();
+    if (event.target.matches("i")){ //save icon clicked
+        console.log(event.target.parentNode.parentNode)
+        var targetGrandparent = event.target.parentNode.parentNode; //the time block the save was in
+    }
+
+})
+
+
+function getRequiredTimeClass(timeBlock, index) {
+    var currentTime = moment().format('h:mma');
+
+    //format the times to compare them
+    var formattedBlock = moment(timeBlock, 'h:mma');
+    var formattedCurrentTime = moment(currentTime, "h:mma"); 
+    var formattedNextBlock = moment(hoursArray[index+1], 'h:mma'); 
+
+    //pass i, if bewteen i and i+1 in hours, should be current time block
+    // EX: if i -> 10:00am and current time is 10:30 then current is after i (10:00am) and before i+1 (11:00am)
+
+    if(formattedCurrentTime.isBetween(formattedBlock, formattedNextBlock)){
+        //console.log("Current time is between "+timeBlock + " and "+ hoursArray[index+1]);
+        return "present";
+
+    } else if (formattedBlock.isBefore(formattedCurrentTime)) {
+        //console.log(timeBlock + " is before current time");
+        return "past";
+
+    } else if (formattedBlock.isAfter(formattedCurrentTime)) {
+        //console.log(timeBlock + " is after current time");
+        return "future";
+    }
+
+}
+// buildDateString returns a usable string of todays date
+function buildDateString() {
+    var string = '';
+    string = string + daysOfWeek[moment().day()] + ", ";
+    string = string + moment().format('LL');
+    return string;
 }
