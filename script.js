@@ -9,18 +9,13 @@ var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
 var currentBlockFound = false;
 var blockObjArray;
 
-$( document ).ready(function() {
+$(document).ready(function () {
     init();
 });
-// ------- IMPORTANT --------
-// $("#9am").find("textarea").css("background-color", "pink");
-
 
 //init() initializes the program by creating any needed local storage and 
 //          formatting the time blocks properly
 function init() {
-
-    //createLocalStorage();
 
     //loop through the hours of the day
     var newTimeRow;
@@ -44,7 +39,7 @@ function init() {
         //set class based on time
         var reqClass = getRequiredTimeClass(hoursArray[i], i); //returns- past  present or future
         $(newCol).attr('class', 'col col-8 ' + reqClass);
-        $(newCol).append("<textarea id=\""+i+"\"></textarea>");
+        $(newCol).append("<textarea id=\"" + i + "\"></textarea>");
         $(newTimeRow).append(newCol);
 
         //col #3 - div with <i> for a save button
@@ -64,45 +59,44 @@ function init() {
     $("#currentDay").text(date);
 }
 
-$("#timeBlockContainer").on("click", function(event){
+$("#timeBlockContainer").on("click", function (event) {
     event.preventDefault();
-    if (event.target.matches("i")){ //save icon clicked
+    if (event.target.matches("i")) { //save icon clicked
+
         console.log(event.target.parentNode.parentNode)
         var targetGrandparent = event.target.parentNode.parentNode; //the time block the save was in
         var text = $(targetGrandparent).find("textarea").val();
         var targetId = $(targetGrandparent).attr('id');
-        
         saveEvent(text, targetId);
     }
 
 })
 
-function saveEvent(text, target){
-    for(var i = 0; i < blockObjArray.length; i++){
-        if(blockObjArray[i].blockName === target){
+function saveEvent(text, target) {
+
+    for (var i = 0; i < blockObjArray.length; i++) {
+        if (blockObjArray[i].blockName === target) {
             blockObjArray[i].blockText = text;
         }
     }
     localStorage.setItem('todo', JSON.stringify(blockObjArray));
 }
 
-function createLocalStorage(){
+function createLocalStorage() {
 
     var array = [];
     var obj = JSON.parse(localStorage.getItem('todo'));
 
-    if(obj != null){ //if exists load data and return
-
+    if (obj != null) { //if exists load data and return
         blockObjArray = JSON.parse(localStorage.getItem('todo'));
 
-        for(var i = 0; i < blockObjArray.length; i++){
-            $('#'+i).val(blockObjArray[i].blockText);
+        for (var i = 0; i < blockObjArray.length; i++) {
+            $('#' + i).val(blockObjArray[i].blockText);
         }
-        
         return;
     } //otherwise create the local data
     console.log("Creating local data");
-    for(var i = 0; i < hoursArray.length; i++){
+    for (var i = 0; i < hoursArray.length; i++) {
         var newBlock = {
             blockName: hoursArray[i],
             blockText: "",
@@ -120,25 +114,22 @@ function getRequiredTimeClass(timeBlock, index) {
 
     //format the times to compare them
     var formattedBlock = moment(timeBlock, 'h:mma');
-    var formattedCurrentTime = moment(currentTime, "h:mma"); 
-    var formattedNextBlock = moment(hoursArray[index+1], 'h:mma'); 
+    var formattedCurrentTime = moment(currentTime, "h:mma");
+    var formattedNextBlock = moment(hoursArray[index + 1], 'h:mma');
 
     //pass i, if bewteen i and i+1 in hours, should be current time block
     // EX: if i -> 10:00am and current time is 10:30 then current is after i (10:00am) and before i+1 (11:00am)
 
-    if(formattedBlock.isSame(formattedCurrentTime)){
+    if (formattedBlock.isSame(formattedCurrentTime)) {
         return "present";
 
-    } else if(formattedCurrentTime.isBetween(formattedBlock, formattedNextBlock)){
-        //console.log("Current time is between "+timeBlock + " and "+ hoursArray[index+1]);
+    } else if (formattedCurrentTime.isBetween(formattedBlock, formattedNextBlock)) {
         return "present";
 
     } else if (formattedBlock.isBefore(formattedCurrentTime)) {
-        //console.log(timeBlock + " is before current time");
         return "past";
 
     } else if (formattedBlock.isAfter(formattedCurrentTime)) {
-        //console.log(timeBlock + " is after current time");
         return "future";
     }
 
